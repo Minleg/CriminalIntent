@@ -36,7 +36,7 @@ class CrimeFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
         // second parameter is the view's parent. Third parameter tells the layout inflater whether to immediately add the inflated view
         // to the view's parent. Pass false as fragment's view will be hosted in the activity's container view and the fragment's
-        // view does not need to be added to the parent view immediatedly - the activity will handle adding the view later.
+        // view does not need to be added to the parent view immediately - the activity will handle adding the view later.
         titleField = view.findViewById(R.id.crime_title) as EditText // View.findViewById(Int) - even Activity does the same behind the scenes
         dateButton = view.findViewById(R.id.crime_date) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox

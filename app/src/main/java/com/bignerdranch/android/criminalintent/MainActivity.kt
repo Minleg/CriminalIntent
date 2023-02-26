@@ -11,8 +11,8 @@ class MainActivity : AppCompatActivity() {
         // you can retrieve the CrimeFragment from the FragmentManager by using containerView ID
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 
-        if (currentFragment == null ) {
-            val fragment = CrimeFragment()
+        if (currentFragment == null) {
+            val fragment = CrimeListFragment.newInstance()
             // creates and commits a fragment transaction (used to add, remove, attach, detach or replace fragment in fragment list)
             // can add multiple fragments to different containers at the same time.
             supportFragmentManager
