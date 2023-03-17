@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,15 +20,10 @@ private const val TAG = "CrimeListFragment"
 class CrimeListFragment : Fragment() {
 
     private lateinit var crimeRecyclerView: RecyclerView
-    private var adapter: CrimeAdapter? = null
+    private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProviders.of(this).get(CrimeListViewModel::class.java)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "Total crimes: ${crimeListViewModel.crimes.size}")
     }
 
     override fun onCreateView(
@@ -38,15 +34,26 @@ class CrimeListFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         crimeRecyclerView = view.findViewById(R.id.crime_recycler_view) as RecyclerView
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
-
-        updateUI()
-
+        crimeRecyclerView.adapter = adapter
         return view
     }
 
-    private fun updateUI() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        crimeListViewModel.crimeListLiveData.observe( // this function registers an observer on the LiveData instance
+            // and tie the life of the observation to the life of another component, such as an activity or fragment
+            viewLifecycleOwner, // you scope the observer to the life of the fragment's view. viewLifecycleOwner here
+            Observer { crimes -> // observer implementation is responsible for reacting to new data from the LiveData.
+                crimes?.let {
+                    Log.i(TAG, "Got crimes ${crimes.size}")
+                    updateUI(crimes)
+                }
+            },
+        )
+    }
+
+    private fun updateUI(crimes: List<Crime>) {
         /* sets  up CrimeListFragments UI. connect Adapter to your RecyclerView*/
-        val crimes = crimeListViewModel.crimes
         adapter = CrimeAdapter(crimes)
         crimeRecyclerView.adapter = adapter
     }
@@ -54,7 +61,9 @@ class CrimeListFragment : Fragment() {
     /* The RecyclerView expects an item view to be wrapped in an instance of ViewHolder. A ViewHolder
     * stores a reference to an item's view ( and sometimes to specific widgets within that view)
     * A RecyclerView never creates Views by themselves. It always creates ViewHolders, which bring their itemViews along for the ride*/
-    private inner class CrimeHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
+    private inner class CrimeHolder(view: View) :
+        RecyclerView.ViewHolder(view),
+        View.OnClickListener {
 
         private lateinit var crime: Crime
 
