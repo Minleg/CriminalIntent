@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminalintent
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,16 +15,32 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.DateFormat
+import java.util.*
 
 private const val TAG = "CrimeListFragment"
 
 class CrimeListFragment : Fragment() {
+
+    /**
+     * Required interface for hosting activities **/
+    interface Callbacks {
+        // defines work that the fragment needs done by its boss, the hosting activity
+        fun onCrimeSelected(crimeId: UUID)
+    }
+
+    private var callbacks: Callbacks? = null
 
     private lateinit var crimeRecyclerView: RecyclerView
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProviders.of(this).get(CrimeListViewModel::class.java)
+    }
+
+    override fun onAttach(context: Context) { // context refers to the activity instance hosting the fragment
+        /* Fragment.onAttach(Context) lifecycle function is called when a fragment is attached to an activity */
+        super.onAttach(context)
+        callbacks = context as Callbacks?
     }
 
     override fun onCreateView(
@@ -40,7 +57,8 @@ class CrimeListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        crimeListViewModel.crimeListLiveData.observe( // this function registers an observer on the LiveData instance
+        crimeListViewModel.crimeListLiveData.observe(
+            // this function registers an observer on the LiveData instance
             // and tie the life of the observation to the life of another component, such as an activity or fragment
             viewLifecycleOwner, // you scope the observer to the life of the fragment's view. viewLifecycleOwner here
             Observer { crimes -> // observer implementation is responsible for reacting to new data from the LiveData.
@@ -50,6 +68,11 @@ class CrimeListFragment : Fragment() {
                 }
             },
         )
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        callbacks = null
     }
 
     private fun updateUI(crimes: List<Crime>) {
@@ -87,7 +110,8 @@ class CrimeListFragment : Fragment() {
         }
 
         override fun onClick(v: View?) {
-            Toast.makeText(context, "${crime.title} pressed!", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(context, "${crime.title} pressed!", Toast.LENGTH_SHORT).show()
+            callbacks?.onCrimeSelected(crime.id)
         }
     }
 
