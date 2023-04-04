@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.bignerdranch.android.criminalintent.database.CrimeDatabase
 import java.util.UUID
+import java.util.concurrent.Executors
 
 /* Repository class encapsulates the logic for accessing data from a single source or a set of sources.
 * It determines how to fetch and store a particular set of data, whether locally in a database or from a remote server.*/
@@ -28,11 +29,24 @@ class CrimeRepository private constructor(context: Context) {
     ).build()
 
     private val crimeDao = database.crimeDao() // references for your DAO object
+    private val executor = Executors.newSingleThreadExecutor() // returns an executor instance that points to a new thread
 
     // add function to your repository for each function in your DAO
     fun getCrimes(): LiveData<List<Crime>> = crimeDao.getCrimes()
 
     fun getCrime(id: UUID): LiveData<Crime?> = crimeDao.getCrime(id)
+
+    fun updateCrime(crime: Crime) {
+        executor.execute { // pushes these operations off the main thread so you do not block your UI
+            crimeDao.updateCrime(crime)
+        }
+    }
+
+    fun addCrime(crime: Crime) {
+        executor.execute {
+            crimeDao.addCrime(crime)
+        }
+    }
 
     companion object {
         // To make CrimeRepository a singleton, add two functions to its companion object.
