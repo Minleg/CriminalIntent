@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.bignerdranch.android.criminalintent.database.CrimeDatabase
+import com.bignerdranch.android.criminalintent.database.migration_1_2
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -26,10 +27,12 @@ class CrimeRepository private constructor(context: Context) {
         context.applicationContext, // Context object, since the db is accessing the filesystem
         CrimeDatabase::class.java, // Database class that you want Room to create
         DATABASE_NAME, // name of the database file you want Room to create for you
-    ).build()
+    ).addMigrations(migration_1_2) // migration needs to be provided to your database when creating the DB instance
+        .build() // variable number of migration objects can be provided
 
     private val crimeDao = database.crimeDao() // references for your DAO object
-    private val executor = Executors.newSingleThreadExecutor() // returns an executor instance that points to a new thread
+    private val executor =
+        Executors.newSingleThreadExecutor() // returns an executor instance that points to a new thread
 
     // add function to your repository for each function in your DAO
     fun getCrimes(): LiveData<List<Crime>> = crimeDao.getCrimes()
